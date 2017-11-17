@@ -67,7 +67,7 @@ namespace DSiDowngrader
                 dst_index += bytes_to_dec;
                 enc_size -= bytes_to_dec + 0x20;
             }
-            byte[] ConIDhex = new byte[16];//remember ConsoleID is actually 8 hexadecimals
+            byte[] ConIDhex = new byte[16];
             ConsoleID = new byte[8];
             Array.Copy(dst, 0x38F, ConIDhex, 0, 16);
            

@@ -101,6 +101,92 @@ namespace DSiDowngrader
                 }
             }
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            using (var fs = new FileStream("config.bin", FileMode.OpenOrCreate, FileAccess.Read))
+            {
+                if (fs.Length > 0 )
+                {
+                    dsicrypto.CID = new byte[16];
+                    fs.Read(dsicrypto.CID, 0, 16);
+                    dsicrypto.ConsoleID = new byte[8];
+                    fs.Read(dsicrypto.ConsoleID, 0, 8);
+                    this.CID.Text = BitConverter.ToString(dsicrypto.CID).Replace("-", string.Empty); ;
+                    this.ConsoleID.Text = BitConverter.ToString(dsicrypto.ConsoleID).Replace("-", string.Empty); ;
+                }
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            using (var fs = new FileStream("config.bin", FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                if (dsicrypto.CID == null)
+                {
+                    dsicrypto.CID = new byte[16];
+                }
+                fs.Write(dsicrypto.CID, 0, 16);
+
+                if (dsicrypto.ConsoleID == null)
+                {
+                    dsicrypto.ConsoleID = new byte[8];
+                }
+                fs.Write(dsicrypto.ConsoleID, 0, 8);
+
+
+            }
+        }
+
+        private void add_footer(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.Filter = "NAND |*.bin";
+            openFileDialog1.Title = "Select a bin File";
+            if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                Stream nand = null;
+
+                if ((nand = openFileDialog1.OpenFile()) != null)
+                {
+                    SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+
+                    saveFileDialog1.Filter = "NAND |*.bin|All files (*.*)|*.*";
+                    saveFileDialog1.FilterIndex = 2;
+                    saveFileDialog1.RestoreDirectory = true;
+                    saveFileDialog1.FileName = "DSi-1";
+                    saveFileDialog1.DefaultExt = "mmc";
+                    if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                    {
+
+                        using (var fs = new FileStream(saveFileDialog1.FileName, FileMode.Create, FileAccess.Write))
+                        {
+                            using (nand)
+                            {
+                                nand.CopyTo(fs);
+                            }
+                            fs.Write(Encoding.ASCII.GetBytes("DSi eMMC CID/CPU"), 0, 16);
+                            if (dsicrypto.CID == null)
+                            {
+                                dsicrypto.CID = new byte[16];
+                            }
+                            fs.Write(dsicrypto.CID, 0, 16);
+                            byte[] temp = new byte[8];
+                            if (dsicrypto.ConsoleID != null)
+                            {
+                                 temp = dsicrypto.ConsoleID.Clone() as byte[];
+                            }
+                            Array.Reverse(temp);
+                            fs.Write(temp, 0, 8);
+
+                            fs.Write(new byte[24], 0, 24);
+                        }
+
+                    }
+                }
+            }
+        }
+
     }
-    
+
 }
