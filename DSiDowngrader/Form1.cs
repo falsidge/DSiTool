@@ -56,6 +56,16 @@ namespace DSiDowngrader
 
                 if ((dsiExport = openFileDialog1.OpenFile()) != null)
                 {
+                    if (dsiExport.Length < 16)
+                    {
+                        MessageBox.Show("Incorrect size for CID.bin. Smaller than expected");
+                        return;
+                    }
+                    if (dsiExport.Length > 16)
+                    {
+                        MessageBox.Show("Incorrect size for CID.bin. Larger than expected. ");
+                        return; 
+                    }
                     using (dsiExport)
                     {
                         byte[] CID = new byte[16];
@@ -79,6 +89,16 @@ namespace DSiDowngrader
 
                 if ((nand = openFileDialog1.OpenFile()) != null)
                 {
+                    if (nand.Length < 0x0F000000)
+                    {
+                        MessageBox.Show("Invalid NAND size. Smaller than expected");
+                        return;
+                    }
+                    if (nand.Length > 0x0F000000)
+                    {
+                        MessageBox.Show("Invalid NAND size. Larger than expected (NAND should have no footer)");
+                        return;
+                    }
                     SaveFileDialog saveFileDialog1 = new SaveFileDialog();
 
                     saveFileDialog1.Filter = "NAND |*.bin|All files (*.*)|*.*";
@@ -112,6 +132,7 @@ namespace DSiDowngrader
                     fs.Read(dsicrypto.CID, 0, 16);
                     dsicrypto.ConsoleID = new byte[8];
                     fs.Read(dsicrypto.ConsoleID, 0, 8);
+                    
                     this.CID.Text = BitConverter.ToString(dsicrypto.CID).Replace("-", string.Empty); ;
                     this.ConsoleID.Text = BitConverter.ToString(dsicrypto.ConsoleID).Replace("-", string.Empty); ;
                 }

@@ -95,7 +95,6 @@ namespace DSiDowngrader
     class DSi_CCM
     {
         public byte[] Key = new byte[16];
- 
         public int maclen;
         private byte[] mac = new byte[16];
         private byte[] ctr = new byte[16];
@@ -106,11 +105,8 @@ namespace DSiDowngrader
             this.maclen = maclength;
 
             maclength = (maclength - 2) / 2;
-
             payloadlength = (payloadlength + 15) & ~15;
 
-            // CCM B0 block:
-            // [1-byte flags] [12-byte nonce] [3-byte size]
             mac[0] = Convert.ToByte((maclength << 3) | 2);
             if (assoclength !=0)
                 mac[0] |= (1 << 6);
@@ -224,14 +220,7 @@ namespace DSiDowngrader
             ctr[13] = 0;
             ctr[14] = 0;
             ctr[15] = 0;
-            for (int i = 0; i < 16; i++)
-            {
-                Console.Write(ctr[i]);
-                Console.Write(" ");
-                Console.Write(Key[i]);
-                Console.Write(" ");
-                Console.WriteLine(chkmac[i]);
-            }
+
             DSi_CTR cryptoctx = new DSi_CTR()
             {
                 Key = Key,
@@ -247,11 +236,6 @@ namespace DSiDowngrader
             DSi_CCM crypt = new DSi_CCM(Key, 16, buffer.Length - 0x20, 0, dnonce);
             buffer = crypt.Decrypt(buffer, out genmac);
 
-            for (int i = 0; i < 16; i++)
-            {
-                Console.Write("genmac ");
-                Console.WriteLine(genmac[i]);
-            }
             return buffer;
         }
     }
@@ -301,14 +285,7 @@ namespace DSiDowngrader
             n128_add(ref key, ref key_xy);
 
             n128_lrot( ref key, 42);
-    }
+        }
 
     }
 }
-/*
- * 
- *             key = new byte[]{ 0x1a, 0x4f, 0x3e, 0x79,
-                0x2a, 0x68,0x0f,0x5f,
-                0x29,0x59,0x02,0x58,
-                0xff,0xfe,0xfb,0x4e };
-*/
